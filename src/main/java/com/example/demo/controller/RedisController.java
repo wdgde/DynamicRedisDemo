@@ -18,7 +18,9 @@ public class RedisController {
 
     @RequestMapping("/redis")
     public void doSth() {
-        redisService.setRedis();
-        redisService.getRedis();
+        //redisService.setRedis();
+        //redisService.getRedis();
+        redisService.setNewRedis();
+        redisService.getNewRedis();
     }
 }

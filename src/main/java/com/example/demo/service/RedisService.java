@@ -1,11 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.config.RedisClusterConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.config.RedisSentinelConfig;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import javax.annotation.Resource;
 
 /**
  * @program: DynamicRedisDemo
@@ -19,10 +18,13 @@ public class RedisService {
 //    @Autowired
 //    private RedisConfig redisConfig;
 
-    @Autowired
-    private RedisClusterConfig redisClusterConfig;
+//    @Autowired
+//    private RedisClusterConfig redisClusterConfig;
 
-    public void setRedis() {
+    @Resource(name = "sentinelStringRedisTemplate")
+    private RedisSentinelConfig.SentinelStringRedisTemplate sentinelStringRedisTemplate;
+
+/*    public void setRedis() {
         //Map<String, StringRedisTemplate> redisTemplateMap = redisConfig.redisTemplate();
         Map<String, StringRedisTemplate> redisTemplateMap = redisClusterConfig.redisTemplate();
         for (int i = 0; i < redisTemplateMap.size(); i++) {
@@ -38,5 +40,19 @@ public class RedisService {
         Map<String, StringRedisTemplate> redisTemplateMap = redisClusterConfig.redisTemplate();
         StringRedisTemplate stringRedisTemplate = redisTemplateMap.get("1");
         System.out.println("---------------" + stringRedisTemplate.opsForHash().get("hash", "hash-key"));
+    }*/
+
+    public void setNewRedis() {
+        for (int i = 0; i < sentinelStringRedisTemplate.getStringRedisTemplateList().size(); i++) {
+            StringRedisTemplate stringRedisTemplate = sentinelStringRedisTemplate.getStringRedisTemplateList().get(i);
+            stringRedisTemplate.opsForHash().put("hash1", "hash1-key", "hash1-value");
+        }
+    }
+
+    public void getNewRedis() {
+        for (int i = 0; i < sentinelStringRedisTemplate.getStringRedisTemplateList().size(); i++) {
+            StringRedisTemplate stringRedisTemplate = sentinelStringRedisTemplate.getStringRedisTemplateList().get(i);
+            System.out.println("---------------" + stringRedisTemplate.opsForHash().get("hash1", "hash1-key"));
+        }
     }
 }

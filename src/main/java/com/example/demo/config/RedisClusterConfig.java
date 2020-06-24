@@ -1,3 +1,4 @@
+/*
 package com.example.demo.config;
 
 import com.example.demo.bean.RedisClusterBean;
@@ -17,12 +18,14 @@ import redis.clients.jedis.JedisPoolConfig;
 import java.time.Duration;
 import java.util.*;
 
+*/
 /**
  * @program: DynamicRedisDemo
  * @description:
  * @author: wdgde
  * @create: 2020-06-17 14:47
- **/
+ **//*
+
 @Configuration
 @ConfigurationProperties(prefix = "spring.my.cluster")
 public class RedisClusterConfig {
@@ -39,6 +42,7 @@ public class RedisClusterConfig {
     @ConfigurationProperties(prefix = "spring.cluster.redis.poolconfig")
     @Bean("jedisPoolConfig")
     public JedisPoolConfig jedisPoolConfig() {
+        System.out.println("----------------------------jedispool初始化完成");
         return new JedisPoolConfig();
     }
 
@@ -62,14 +66,17 @@ public class RedisClusterConfig {
         return redisSentinelConfiguration;
     }
 
+
     public RedisConnectionFactory redisConnectionFactory(RedisClusterBean redisClusterBean) {
         //Jedis方式
+        //JedisClientConfiguration的方式不能jedisConnectionFactory.setUsePool(true)
         JedisClientConfiguration jedisClientConfiguration = JedisClientConfiguration.builder().usePooling().poolConfig(jedisPoolConfig()).build();
-        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisSentinelConfiguration(redisClusterBean), jedisClientConfiguration);
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisSentinelConfiguration(redisClusterBean), jedisPoolConfig());
         jedisConnectionFactory.setHostName(redisClusterBean.getHost());
         jedisConnectionFactory.setPort(redisClusterBean.getPort());
         jedisConnectionFactory.setDatabase(redisClusterBean.getDatabase());
-        System.out.println("-------------" + jedisClientConfiguration.getPoolConfig());
+        jedisConnectionFactory.setUsePool(true);
+        System.out.println("-------------" + jedisConnectionFactory.getPoolConfig());
         //Lettuce方式
         LettuceClientConfiguration lettuceClientConfiguration = LettucePoolingClientConfiguration.builder().commandTimeout(Duration.ofMillis(1234)).poolConfig(jedisPoolConfig()).build();
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisSentinelConfiguration(redisClusterBean), lettuceClientConfiguration);
@@ -98,4 +105,30 @@ public class RedisClusterConfig {
         }
         return redisTemplateMap;
     }
-}
+
+
+    // @Bean("redisConnectionFactoryTest")
+    public RedisConnectionFactory redisConnectionFactoryTest() {
+        List<RedisClusterBean> redisClusterBean = getRedisClusterBean();
+        RedisSentinelConfiguration redisSentinelConfiguration = new RedisSentinelConfiguration();
+        String[] sub = redisClusterBean.get(0).getNodes().split(",");
+        Set<RedisNode> nodeList = new HashSet<>(sub.length);
+        String[] tmp;
+        for (String s : sub) {
+            tmp = s.split(":");
+            nodeList.add(new RedisNode(tmp[0], Integer.valueOf(tmp[1])));
+        }
+        redisSentinelConfiguration.setSentinels(nodeList);
+        redisSentinelConfiguration.setMaster(redisClusterBean.get(0).getMaster());
+        JedisConnectionFactory jedisConnectionFactory = new JedisConnectionFactory(redisSentinelConfiguration, jedisPoolConfig());
+        System.out.println("---------------------jedisConnectionFactory初始化完成！！！");
+        return jedisConnectionFactory;
+    }
+
+    //@Bean("list")
+    public List list() {
+        List<RedisClusterBean> redisClusterBean = getRedisClusterBean();
+        System.out.println("---------------------list初始化完成！！！");
+        return redisClusterBean;
+    }
+}*/
